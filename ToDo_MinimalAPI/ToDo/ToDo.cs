@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 namespace ToDo_MinimalAPI;
 
 public class ToDo

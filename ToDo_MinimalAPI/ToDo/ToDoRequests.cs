@@ -1,3 +1,6 @@
+using FluentValidation;
+using System.ComponentModel.DataAnnotations;
+
 namespace ToDo_MinimalAPI;
 
 public static class ToDoRequests
@@ -7,15 +10,15 @@ public static class ToDoRequests
         app.MapGet("/todos", ToDoRequests.GetAll)
             .Produces<List<ToDo>>();
 
-        app.MapGet("/todos/{id}", ToDoRequests.GetById);
+        app.MapGet("/todos/{id}", ToDoRequests.GetById)
             .Produces<ToDo>()
             .Produces(StatusCodes.Status404NotFound);
 
-        app.MapPost("/todos/", ToDoRequests.Create);
+        app.MapPost("/todos/", ToDoRequests.Create)
             .Produces<ToDo>(StatusCodes.Status201Created)
             .Accepts<ToDo>("application/json");
 
-        app.MapPut("/todos/{id}", ToDoRequests.Update);
+        app.MapPut("/todos/{id}", ToDoRequests.Update)
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
             .Accepts<ToDo>("application/json");
@@ -42,19 +45,32 @@ public static class ToDoRequests
         return Results.Ok(todo);
     }
 
-    public static IResult Create(IToDoService service, ToDo toDo)
+    public static IResult Create(IToDoService service, ToDo toDo, IValidator<ToDo> validator)
     {
+        var ValidationResult = validator.Validate(toDo);
+        if (!ValidationResult.IsValid)
+        {
+            return Results.BadRequest(ValidationResult.Errors);
+        }
+
         service.Create(toDo);
         return Results.Created($"/todos/{toDo.Id}", toDo);
     }
 
-    public static IResult Update(IToDoService service, Guid id, ToDo toDo)
+    public static IResult Update(IToDoService service, Guid id, ToDo toDo, IValidator<ToDo> validator)
     {
+        var ValidationResult = validator.Validate(toDo);
+        if (!ValidationResult.IsValid)
+        {
+            return Results.BadRequest(ValidationResult.Errors);
+        }
+
         var todo = service.GetById(id);
         if(todo == null)
         {
             return Results.NotFound();
         }
+       
         service.Update(toDo);
         return Results.NoContent();
     }
