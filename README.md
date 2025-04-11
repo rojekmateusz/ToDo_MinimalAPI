@@ -21,6 +21,6 @@ Designed specifically as a backend solution for the Flutter mobile application I
 
 ##  Setup
 
-1. Clone the repository:
+Clone the repository:
    ```bash
    git clone https://github.com/rojekmateusz/ToDo_MinimalAPI.git
