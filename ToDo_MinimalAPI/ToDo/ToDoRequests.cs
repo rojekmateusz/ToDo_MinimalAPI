@@ -1,4 +1,5 @@
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using System.ComponentModel.DataAnnotations;
 
 namespace ToDo_MinimalAPI;
@@ -8,24 +9,29 @@ public static class ToDoRequests
     public static WebApplication RegisterEndpoints(this WebApplication app)
     {
         app.MapGet("/todos", ToDoRequests.GetAll)
-            .Produces<List<ToDo>>();
+            .Produces<List<ToDo>>()
+            .RequireAuthorization();
 
         app.MapGet("/todos/{id}", ToDoRequests.GetById)
             .Produces<ToDo>()
-            .Produces(StatusCodes.Status404NotFound);
+            .Produces(StatusCodes.Status404NotFound)
+            .RequireAuthorization();
 
         app.MapPost("/todos/", ToDoRequests.Create)
             .Produces<ToDo>(StatusCodes.Status201Created)
-            .Accepts<ToDo>("application/json");
+            .Accepts<ToDo>("application/json")
+            .RequireAuthorization();
 
         app.MapPut("/todos/{id}", ToDoRequests.Update)
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
-            .Accepts<ToDo>("application/json");
+            .Accepts<ToDo>("application/json")
+            .RequireAuthorization();
 
         app.MapDelete("/todos/{id}", ToDoRequests.Delete)
             .Produces(StatusCodes.Status204NoContent)
-            .Produces(StatusCodes.Status404NotFound);
+            .Produces(StatusCodes.Status404NotFound)
+            .RequireAuthorization();
 
         return app;
     }
@@ -38,7 +44,7 @@ public static class ToDoRequests
     public static IResult GetById(IToDoService service, Guid id)
     {
         var todo = service.GetById(id);
-        if(todo == null)
+        if (todo == null)
         {
             return Results.NotFound();
         }
@@ -66,11 +72,11 @@ public static class ToDoRequests
         }
 
         var todo = service.GetById(id);
-        if(todo == null)
+        if (todo == null)
         {
             return Results.NotFound();
         }
-       
+
         service.Update(toDo);
         return Results.NoContent();
     }
@@ -78,7 +84,7 @@ public static class ToDoRequests
     public static IResult Delete(IToDoService service, Guid id)
     {
         var todo = service.GetById(id);
-        if(todo == null)
+        if (todo == null)
         {
             return Results.NotFound();
         }
